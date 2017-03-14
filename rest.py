@@ -1,5 +1,14 @@
 class JsonType(object):
 
+    def _format_subtypes(self):
+        return ''
+
+    def __repr__(self):
+        return '<{} {}>'.format(
+            self.__type__,
+            self._format_subtypes()
+        )
+
     def __hash__(self):
         return hash(repr(self))
 
@@ -8,16 +17,19 @@ class JsonType(object):
 
 
 class IntType(JsonType):
+    __type__ = 'number'
 
     def __repr__(self):
         return '<int>'
 
 class StringType(JsonType):
+    __type__ = 'string'
 
     def __repr__(self):
         return '<str>'
 
 class ListType(JsonType):
+    __type__ = 'list'
 
     def __init__(self, lst):
         self.types = set([
@@ -25,13 +37,14 @@ class ListType(JsonType):
             for d in lst
         ])
 
-    def __repr__(self):
-        return '<list [{}]>'.format(
+    def _format_subtypes(self):
+        return '[{}]'.format(
             "|".join([repr(t) for t in self.types])
         )
 
 
 class DictType(JsonType):
+    __type__ = 'map'
 
     def __init__(self, dct):
         self.types = {
@@ -39,8 +52,8 @@ class DictType(JsonType):
             for k, v in dct.items()
         }
 
-    def __repr__(self):
-        return '<dict ({})>'.format(", ".join([
+    def _format_subtypes(self):
+        return '({})'.format(", ".join([
             '{}: {}'.format(k, v)
             for k, v in self.types.items()
         ]))
