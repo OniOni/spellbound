@@ -1,7 +1,7 @@
 class JsonType(object):
 
     def _format_subtypes(self):
-        return ''
+        return None
 
     def __repr__(self):
         return '<{} {}>'.format(
@@ -22,20 +22,22 @@ class IntType(JsonType):
     def __repr__(self):
         return '<int>'
 
+
 class StringType(JsonType):
     __type__ = 'string'
 
     def __repr__(self):
         return '<str>'
 
+
 class ListType(JsonType):
     __type__ = 'list'
 
     def __init__(self, lst):
-        self.types = set([
-            type_of(d)
-            for d in lst
-        ])
+        self.types = set()
+
+    def add(self, type):
+        self.types.add(type)
 
     def _format_subtypes(self):
         return '[{}]'.format(
@@ -47,10 +49,10 @@ class DictType(JsonType):
     __type__ = 'map'
 
     def __init__(self, dct):
-        self.types = {
-            k: type_of(v)
-            for k, v in dct.items()
-        }
+        self.types = {}
+
+    def add(self, key, type):
+        self.types[key] = type
 
     def _format_subtypes(self):
         return '({})'.format(", ".join([
@@ -58,22 +60,43 @@ class DictType(JsonType):
             for k, v in self.types.items()
         ]))
 
+def type_of(doc, collection=None):
+    if collection is None:
+        collection = {}
 
-def type_of(doc):
     if isinstance(doc, str):
-        return StringType()
+        t = StringType()
     elif isinstance(doc, int):
-        return IntType()
+        t =  IntType()
     elif isinstance(doc, dict):
-        return DictType(doc)
+        t = DictType(doc)
+        for key, d in doc.items():
+            st, collection = type_of(d, collection)
+            t.add(key, st)
     elif isinstance(doc, list):
-        return ListType(doc)
+        t = ListType(doc)
+        for d in doc:
+            st, collection = type_of(d, collection)
+            t.add(st)
     else:
         raise TypeError("Can't process: %s", type(doc))
 
+    if t not in collection:
+        collection[t] = 1
+    else:
+        collection[t] += 1
+
+    return t, collection
+
+def diff(a, b, strict=True):
+
+    if strict:
+        return a == b
+
+
 
 if __name__ == '__main__':
-    print(type_of({
+    tree, types = type_of({
         'k': 42,
         'l': [1,2,3, 'hey'],
         's': 'hello',
@@ -81,6 +104,11 @@ if __name__ == '__main__':
             'k2': 42,
             'l': [{'k': 42}, {'k': 100}]
         }
-    }))
+    })
+    print('Tree: ', tree)
+    print('Types: ', types)
 
-    print(type_of([1,2,3, 'hey']))
+
+    tree, types = type_of([1,2,3, 'hey'])
+    print('Tree: ', tree)
+    print('Types: ', types)
