@@ -60,6 +60,30 @@ class DictType(JsonType):
             for k, v in self.types.items()
         ]))
 
+    def diff(self, b):
+        a_keys, b_keys, = self.types.keys(), b.types.keys()
+        additions = [
+            '<{}: {}>'.format(k, b.types[k])
+            for k in b_keys - a_keys
+        ]
+        deletions = [
+            '<{}: {}>'.format(k, self.types[k])
+            for k in a_keys - b_keys
+        ]
+        changes = [
+            '<{}: {} != {}>'.format(
+                k, self.types[k], b.types[k]
+            )
+            for k in a_keys & b_keys
+            if self.types[k] != b.types[k]
+        ]
+
+        return {
+            '+': additions,
+            '-': deletions,
+            '~': changes
+        }
+
 def type_of(doc, collection=None):
     if collection is None:
         collection = {}
@@ -88,11 +112,11 @@ def type_of(doc, collection=None):
 
     return t, collection
 
+
 def diff(a, b, strict=True):
 
     if strict:
         return a == b
-
 
 
 if __name__ == '__main__':
@@ -112,3 +136,17 @@ if __name__ == '__main__':
     tree, types = type_of([1,2,3, 'hey'])
     print('Tree: ', tree)
     print('Types: ', types)
+
+    obj1, _ = type_of({
+        'k': 'hey',
+        'k2': 42,
+        'k4': 42
+    })
+
+    obj2, _ = type_of({
+        'k': 'hey',
+        'k3': 42,
+        'k4': 'hey'
+    })
+
+    print('Diff: ', obj1.diff(obj2))
