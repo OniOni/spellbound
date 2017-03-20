@@ -17,7 +17,7 @@ class JsonType(object):
     def __eq__(self, b):
         return hash(self) == hash(b)
 
-    def json_schema(self):
+    def schema(self):
         return {
             'type': self.__type__
         }
@@ -51,11 +51,11 @@ class ListType(JsonType):
             "|".join([repr(t) for t in self.types])
         )
 
-    def json_schema(self):
-        schema = super().json_schema()
+    def schema(self):
+        schema = super().schema()
         schema.update({
             'items': [
-                i.json_schema()
+                i.schema()
                 for i in self.types
             ]
         })
@@ -77,11 +77,11 @@ class DictType(JsonType):
             for k, v in self.types.items()
         ]))
 
-    def json_schema(self):
-        schema = super().json_schema()
+    def schema(self):
+        schema = super().schema()
         schema.update({
             'properties': {
-                k: v.json_schema()
+                k: v.schema()
                 for k, v in self.types.items()
             }
         })
@@ -157,7 +157,7 @@ if __name__ == '__main__':
             'l': [{'k': 42}, {'k': 100}]
         }
     })
-    schema = tree.json_schema()
+    schema = tree.schema()
     print(json.dumps(schema))
     # print('Tree: ', tree)
     # print('Types: ', types)
