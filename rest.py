@@ -1,3 +1,5 @@
+import json
+
 class JsonType(object):
 
     def _format_subtypes(self):
@@ -14,6 +16,11 @@ class JsonType(object):
 
     def __eq__(self, b):
         return hash(self) == hash(b)
+
+    def json_schema(self):
+        return {
+            'type': self.__type__
+        }
 
 
 class IntType(JsonType):
@@ -44,9 +51,19 @@ class ListType(JsonType):
             "|".join([repr(t) for t in self.types])
         )
 
+    def json_schema(self):
+        schema = super().json_schema()
+        schema.update({
+            'items': [
+                i.json_schema()
+                for i in self.types
+            ]
+        })
+
+        return schema
 
 class DictType(JsonType):
-    __type__ = 'map'
+    __type__ = 'object'
 
     def __init__(self, dct):
         self.types = {}
@@ -59,6 +76,17 @@ class DictType(JsonType):
             '{}: {}'.format(k, v)
             for k, v in self.types.items()
         ]))
+
+    def json_schema(self):
+        schema = super().json_schema()
+        schema.update({
+            'properties': {
+                k: v.json_schema()
+                for k, v in self.types.items()
+            }
+        })
+
+        return schema
 
     def diff(self, b):
         a_keys, b_keys, = self.types.keys(), b.types.keys()
@@ -129,13 +157,15 @@ if __name__ == '__main__':
             'l': [{'k': 42}, {'k': 100}]
         }
     })
-    print('Tree: ', tree)
-    print('Types: ', types)
-
+    schema = tree.json_schema()
+    print(json.dumps(schema))
+    # print('Tree: ', tree)
+    # print('Types: ', types)
+    # print('schema: ', schema)
 
     tree, types = type_of([1,2,3, 'hey'])
-    print('Tree: ', tree)
-    print('Types: ', types)
+    # print('Tree: ', tree)
+    # print('Types: ', types)
 
     obj1, _ = type_of({
         'k': 'hey',
@@ -149,4 +179,4 @@ if __name__ == '__main__':
         'k4': 'hey'
     })
 
-    print('Diff: ', obj1.diff(obj2))
+    # print('Diff: ', obj1.diff(obj2))
