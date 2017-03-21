@@ -3,16 +3,17 @@ import sys
 
 from spellbound.lib import parse, dumps
 
+
 def setup():
     parser = argparse.ArgumentParser()
-    parser.add_argument('-f', type=str, default=None)
+    parser.add_argument('-s', type=str, default=None)
 
     return parser.parse_args()
 
 def run(args):
     _input = sys.stdin.read()
-    if args.f:
-        print('diff')
+    if args.s:
+        print('Diff')
     else:
         doc = parse(_input)
         print(dumps(doc))
