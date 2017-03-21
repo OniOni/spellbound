@@ -1,6 +1,8 @@
 import json
 
-def load(doc, collection=None):
+from spellbound.lib.types import *
+
+def to_type(doc, collection=None):
     if collection is None:
         collection = {}
 
@@ -11,13 +13,15 @@ def load(doc, collection=None):
     elif isinstance(doc, dict):
         t = DictType(doc)
         for key, d in doc.items():
-            st, collection = load(d, collection)
+            st, collection = to_type(d, collection)
             t.add(key, st)
     elif isinstance(doc, list):
         t = ListType(doc)
         for d in doc:
-            st, collection = load(d, collection)
+            st, collection = to_type(d, collection)
             t.add(st)
+    elif isinstance(doc, type(None)):
+        t = NoneType()
     else:
         raise TypeError("Can't process: %s", type(doc))
 
@@ -29,10 +33,11 @@ def load(doc, collection=None):
     return t, collection
 
 
-def loads(string):
+def parse(string):
     doc = json.loads(string)
-    doc, _ = load()
+    doc, _ = to_type(doc)
     return doc
+
 
 def dumps(doc):
     return json.dumps(doc.schema())

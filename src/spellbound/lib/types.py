@@ -35,6 +35,14 @@ class StringType(JsonType):
         return '<str>'
 
 
+class NoneType(JsonType):
+    __type__ = 'null'
+
+
+    def __repr__(self):
+        return '<null>'
+
+
 class ListType(JsonType):
     __type__ = 'list'
 
