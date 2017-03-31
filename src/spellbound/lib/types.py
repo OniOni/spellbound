@@ -46,7 +46,7 @@ class NoneType(JsonType):
 class ListType(JsonType):
     __type__ = 'list'
 
-    def __init__(self, lst):
+    def __init__(self, lst=None):
         self.types = set()
 
     def add(self, type):
@@ -71,7 +71,7 @@ class ListType(JsonType):
 class DictType(JsonType):
     __type__ = 'object'
 
-    def __init__(self, dct):
+    def __init__(self, dct=None):
         self.types = {}
 
     def add(self, key, type):

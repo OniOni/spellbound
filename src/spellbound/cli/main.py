@@ -1,8 +1,9 @@
 import argparse
+import json
 import sys
 
-from spellbound.lib import parse, dumps
-
+from spellbound.lib import parse, dumps, loads
+from spellbound.lib.diff import diff
 
 def setup():
     parser = argparse.ArgumentParser()
@@ -13,7 +14,12 @@ def setup():
 def run(args):
     _input = sys.stdin.read()
     if args.s:
-        print('Diff')
+        with open(args.s, 'r') as f:
+            schema = f.read()
+
+        a, b = loads(schema), parse(_input)
+        d = diff(a, b)
+        print(json.dumps(d))
     else:
         doc = parse(_input)
         print(dumps(doc))
