@@ -80,7 +80,7 @@ class DictType(JsonType):
     def _format_subtypes(self):
         return '({})'.format(", ".join([
             '{}: {}'.format(k, v)
-            for k, v in self.types.items()
+            for k, v in sorted(self.types.items(), key=lambda x: x[0])
         ]))
 
     def schema(self):
