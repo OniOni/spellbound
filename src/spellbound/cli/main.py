@@ -12,12 +12,12 @@ def setup():
     return parser.parse_args()
 
 def run(args):
-    _input = sys.stdin.read()
+    input_ = sys.stdin.read()
     if args.s:
         with open(args.s, 'r') as f:
             schema = f.read()
 
-        a, b = loads(schema), parse(_input)
+        a, b = loads(schema), parse(input_)
         d = diff(a, b)
         print(json.dumps(d))
     else:
